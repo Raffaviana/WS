@@ -1,0 +1,221 @@
+// Copyright 2019 the Dart project authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license
+// that can be found in the LICENSE file.
+
+import 'dart:math' as math;
+import 'package:flutter/material.dart';
+
+const Color primaryColor = Colors.blue;
+const TargetPlatform platform = TargetPlatform.android;
+
+void main() {
+  runApp(Sunflower());
+}
+
+class SunflowerPainter extends CustomPainter {
+  static const seedRadius = 2.0;
+  static const scaleFactor = 4;
+  static const tau = math.pi * 2;
+
+  static final phi = (math.sqrt(5) + 1) / 2;
+
+  final int seeds;
+
+  SunflowerPainter(this.seeds);
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final center = size.width / 2;
+
+    for (var i = 0; i < seeds; i++) {
+      final theta = i * tau / phi;
+      final r = math.sqrt(i) * scaleFactor;
+      final x = center + r * math.cos(theta);
+      final y = center - r * math.sin(theta);
+      final offset = Offset(x, y);
+      if (!size.contains(offset)) {
+        continue;
+      }
+      drawSeed(canvas, x, y);
+    }
+  }
+
+  @override
+  bool shouldRepaint(SunflowerPainter oldDelegate) {
+    return oldDelegate.seeds != seeds;
+  }
+
+  // Draw a small circle representing a seed centered at (x,y).
+  void drawSeed(Canvas canvas, double x, double y) {
+    final paint = Paint()
+      ..strokeWidth = 2
+      ..style = PaintingStyle.fill
+      ..color = primaryColor;
+    canvas.drawCircle(Offset(x, y), seedRadius, paint);
+  }
+  
+  
+}
+
+class Sunflower extends StatefulWidget {
+  @override
+  State<StatefulWidget> createState() {
+    return _SunflowerState();
+  }
+}
+
+class _SunflowerState extends State<Sunflower> {
+  double seeds = 100.0;
+  bool _lights = false;
+  final TextEditingController _controller = TextEditingController();
+  SingingCharacter? _character = SingingCharacter.a;
+  
+  
+  int get seedCount => seeds.floor();
+
+  @override
+  Widget build(BuildContext context) {
+    return MaterialApp(
+      debugShowCheckedModeBanner: false,
+      theme: ThemeData(primarySwatch: Colors.yellow,).copyWith(
+        sliderTheme: SliderThemeData.fromPrimaryColors(
+          primaryColor: primaryColor,
+          primaryColorLight: primaryColor,
+          primaryColorDark: primaryColor,
+          valueIndicatorTextStyle: const DefaultTextStyle.fallback().style,
+        ),
+      ),
+      home: Scaffold(
+        appBar: AppBar(
+          title: const Text("Rádio SENAC"),
+        ),
+        
+        body: Container( 
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.center,
+            mainAxisAlignment: MainAxisAlignment.start,
+            children: [
+              
+              SizedBox(height: 20),
+              
+              Text("Volume"),
+              ConstrainedBox(
+                constraints: const BoxConstraints.tightFor(width: 300),
+                child: Slider.adaptive(
+                  min: 20,
+                  max: 2000,
+                  value: seeds,
+                  onChanged: (newValue) {
+                    setState(() {
+                      seeds = newValue;
+                    });
+                  },
+                ),
+              ),
+              
+              SizedBox(height: 20),
+              
+              Text("Modulação"),
+              
+              SwitchListTile(
+                title: const Text('AM / FM'),
+                value: _lights,
+                activeColor: Colors.blue,
+                onChanged: (bool value) {
+                  setState(() {
+                  _lights = value;
+                });
+               },
+              ),
+              
+              SizedBox(height: 20),
+              
+              Text("Mensagem"),
+              
+              TextFormField(
+                controller: _controller,
+                decoration: const InputDecoration(
+                  border: OutlineInputBorder(),
+                ),
+              ),
+              
+              SizedBox(height: 20),
+              
+              ListTile(
+                title: const Text('88,9 MHz'),
+                leading: Radio<SingingCharacter>(
+                  value: SingingCharacter.a,
+                  groupValue: _character,
+                  onChanged: (SingingCharacter? value) {
+                    setState(() {
+                      _character = value;
+                });
+               },
+              ),
+             ),
+              ListTile(
+                title: const Text('89,7 MHz'),
+                leading: Radio<SingingCharacter>(
+                  value: SingingCharacter.b,
+                  groupValue: _character,
+                  onChanged: (SingingCharacter? value) {
+                    setState(() {
+                      _character = value;
+                });
+               },
+              ),
+             ),
+              ListTile(
+                title: const Text('94,7 MHz'),
+                leading: Radio<SingingCharacter>(
+                  value: SingingCharacter.c,
+                  groupValue: _character,
+                  onChanged: (SingingCharacter? value) {
+                    setState(() {
+                      _character = value;
+                });
+               },
+              ),
+             ),
+              ListTile(
+                title: const Text('101,7 MHz'),
+                leading: Radio<SingingCharacter>(
+                  value: SingingCharacter.d,
+                  groupValue: _character,
+                  onChanged: (SingingCharacter? value) {
+                    setState(() {
+                      _character = value;
+                });
+               },
+              ),
+             ),
+              
+              SizedBox(height: 20),
+              
+              
+              floatingActionButton: FloatingActionButton(
+                child: const Icon(Icons.add),
+                onPressed: () {
+                  setState(() {
+                    _vol -= 10;
+                });
+               },
+              ),
+              floatingActionButton: FloatingActionButton(
+                child: const Icon(Icons.add),
+                onPressed: () {
+                  setState(() {
+                    _vol -= 10;
+               });
+              },
+             ),
+              
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+  double _volume = 0.0;
+  double _vol = 2.0;
+}
